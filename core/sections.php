@@ -1,0 +1,5 @@
+<?php
+
+$sections = array (
+	
+);
