@@ -1,15 +1,15 @@
 <?php
-	// LISTE DES CONFIGUARION DU FRAMEWORK
-	//Ceci est un autre commentaire
+
+    // LISTE DES CONFIGURATIONS DU FRAMEWORK
 	require_once './core/config.php';
 
-	$request = new \ESMT\PHARMALIV\Request;
-	$pArray = explode( '/', $request->relPath() );
+	$request = new \ESMT\VLFramework\Request;
+	$pArray = $request->sections();
 
 	$section = $pArray[0];
-	unset($pArray[0]);
+    unset($pArray[0]);
 
-	// Page d'accueil du site
+    // Page d'accueil du site
 	if ( $section == '' ) {
         (new Response())->render ( 'home.html', $request->get() );
 
@@ -18,46 +18,67 @@
 
 		// ON RECUPERE LA NOUVELLE URL DE LA SECTION
 		$url = '/'.implode('/', $pArray);
-		require './src/'.$section.'/urls.php';
+		$urlsFilePath = './src/'.$section.'/urls.php';
 
-		$found = false;
+		// SI LE FICHIER urls.php DE LA SECTION EXISTE
+		if ( file_exists($urlsFilePath) ) {
+            require $urlsFilePath;
 
-		// ON REGARDE SI LURL FAIT PARTIE DE LA LISTE DES URLS
-		// ENUMEREES
-		foreach ($urls as $path => $mtd) {
-			$pattern = createPattern( $path );
+            $found = false;
 
-			if ( preg_match( $pattern, $url, $params ) ){
-				unset($params[0]);
-				$found = true;
-				$method = $mtd;
-				break;
-			}
-		}
+            // ON REGARDE SI LURL FAIT PARTIE DE LA LISTE DES URLS
+            // ENUMEREES
+            foreach ($urls as $path => $mtd) {
+                $pattern = createPattern( $path );
 
-		// SI ON TROUVE UNE CORRESPONDANCE, ON RECUPERE LA METHODE
-		// ACTION ET ON L'APPELLE
-		if ( $found ) {
-			require './src/'.$section.'/actions.php';
+                if ( preg_match( $pattern, $url, $params ) ){
+                    unset($params[0]);
+                    $found = true;
+                    $method = $mtd;
+                    break;
+                }
+            }
 
-			$response = new Response;
-			$response->addTemplateDir ( './src/'.$section.'/templates' );
+            // SI ON TROUVE UNE CORRESPONDANCE, ON RECUPERE LA METHODE
+            // ACTION ET ON L'APPELLE
+            if ( $found ) {
+                $actionsFilePath = './src/'.$section.'/actions.php';
 
-			$action = new \ESMT\PHARMALIV\Action ( $request, $response );
+                //LE FICHIER actions.php EXISTE
+                if (file_exists($actionsFilePath)) {
+                    require $actionsFilePath;
 
-			if (count($params) > 0){
-				$method( $action ,$params );
+                    $response = new Response;
+                    $response->addTemplateDir ( './src/'.$section.'/templates' );
 
-			} else {
-				$method ( $action );
-			}
+                    $action = new \ESMT\VLFramework\Action ( $request, $response );
 
-		// SI L'URL N'APPARTIENT PAS A LA SECTION
-		} else {
-            (new Response())->render ( '404.html' );
-		}
+                    if (count($params) > 0){
+                        $method( $action, $params );
+
+                    } else {
+                        $method ( $action );
+                    }
+
+                    //LE FICHIER actions.php EST INTROUVABLE
+                } else {
+                    echo "Le fichier " .$actionsFilePath. " est introuvable";
+                }
+
+                // SI L'URL N'APPARTIENT PAS A LA SECTION
+            } else {
+                (new Response())->render ( '404.html' );
+            }
+
+            //LE FICHIER urls.php DE LA SECTION EST INTROUVABLE
+        } else {
+		    echo "Le fichier " . $urlsFilePath . " est introuvable !";
+        }
+
 
 	// SI LA SECTION N'EXISTE PAS ON AFFICHE UNE ERREUR
 	} else {
         (new Response())->render ( '404.html' );
 	}
+
+	clearstatcache();

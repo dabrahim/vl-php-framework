@@ -1,6 +1,6 @@
 <?php
 
-namespace Esmt\Pharmaliv; 
+namespace Esmt\VLFramework;
 
 class Request {
 	private $_get;
@@ -14,9 +14,7 @@ class Request {
 		// PATH
 		$this->_path = parse_url( $uri, PHP_URL_PATH );
 
-		// PARAMETRES GET
-		$qs = parse_url( $uri, PHP_URL_QUERY );
-		parse_str ( $qs, $this->_get );
+		$this->_get = $_GET;
 
 		// PARAMETRES POST
 		$this->_post = $_POST;
@@ -24,6 +22,10 @@ class Request {
 		//FICHIERS
         $this->_files = $_FILES;
 	}
+
+	public function sections () {
+        return explode( '/', $this->relPath() );
+    }
 
 	public function post () {
 		return $this->_post;

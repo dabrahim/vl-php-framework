@@ -4,7 +4,7 @@ class Response {
 	private $_templateDirs;
 
 	function __construct () {
-		$this->_templateDirs = array ( './templates' );
+		$this->_templateDirs = array ();
 	}
 
 	function addTemplateDir ( $templateDir ) {
@@ -17,6 +17,8 @@ class Response {
 		if ($data == null){
 			$data = array();
 		}
+
+        $this->_templateDirs [] = './templates';
 
 		$loader = new Twig_Loader_Filesystem( $this->_templateDirs );
 		$twig = new Twig_Environment( $loader );

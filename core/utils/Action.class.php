@@ -1,6 +1,6 @@
 <?php
 
-namespace Esmt\Pharmaliv; 
+namespace Esmt\VLFramework;
 
 class Action {
 	private $_request;
